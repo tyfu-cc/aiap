@@ -1,0 +1,80 @@
+BootStrap: docker
+From: ubuntu:22.04
+
+%environment
+  export LANG=C
+  export LC_ALL=C
+  export SINGULARITY_SHELL=/bin/bash
+  export MAMBA_ROOT_PREFIX=/opt/mamba
+  export PATH="${MAMBA_ROOT_PREFIX}/bin:$PATH"
+  export PATH="/opt/methylQA/:$PATH"
+
+%post -c /bin/bash
+
+  # Freeze tool version
+  # BiocManager 3.10
+  # SRA toolkit (fastq-dump) 2.10.0
+
+  # Install all build-essentials
+  apt-get update
+  apt-get install -y --no-install-recommends \
+    bc \
+    bzip2 \
+    ca-certificates \
+    curl \
+    g++ \
+    gcc \
+    gfortran \
+    git \
+    less \
+    make \
+    parallel \
+    texlive-latex-base texlive-latex-extra \
+    unzip \
+    xorg-dev \
+    zlib1g-dev \
+    vim \
+    wget \
+    libbz2-dev
+  apt-get clean
+
+  mkdir -p /opt/mamba/
+  curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj -C /opt/mamba bin/micromamba
+  export MAMBA_ROOT_PREFIX=/opt/mamba
+  eval "$(/opt/mamba/bin/micromamba shell hook -s posix)"
+
+  micromamba activate base
+  micromamba install -y -c conda-forge -c bioconda \
+    python=3.10 \
+    r-base=4.4 \
+    cutadapt=5.0 \
+    sra-tools \
+    fastqc=0.12.1 \
+    multiqc \
+    bwa=0.7.18 \
+    macs3=3.0.2 \
+    preseq=3.2.0 \
+    samtools=1.21 \
+    bedtools=2.31.1 \
+    ucsc-bedgraphtobigwig \
+    jq
+  micromamba clean --all --yes
+
+  R -e 'install.packages(c("dplyr", "magrittr", "ggplot2", "cowplot", "data.table", "jsonlite", "BiocManager"), repos="https://cran.r-project.org")'
+  R -e 'BiocManager::install(c("DESeq2", "edgeR"))'
+
+  # 2. methylQA: no version control for install file (07/06, v0.2.1)
+  Install methylQA 0.2.1
+  cd /opt/ \
+    && git clone https://github.com/lidaof/methylQA.git \
+    && cd /opt/methylQA/ \
+    && sed -i 's/-Werror //' makefile \
+    && make \
+    && cd /
+
+%runscript
+  #!/bin/bash
+
+  export MAMBA_ROOT_PREFIX=/opt/mamba
+  eval "$(/opt/mamba/bin/micromamba shell hook -s posix)"
+  micromamba activate base

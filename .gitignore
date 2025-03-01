@@ -1,0 +1,7 @@
+images/
+*.csv
+*.json
+work/
+.nextflow/
+.nextflow.log
+.nextflow.log.*
