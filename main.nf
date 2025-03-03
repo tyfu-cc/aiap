@@ -42,7 +42,7 @@ workflow {
     cc ? [[meta + ["case": true], case_reads], [meta + ["case": false], ctrl_reads]] : [[meta, case_reads]]
   }
 
-  reads_ch.view()
+  // reads_ch.view()
 
   CUTADAPT_TRIM(
     reads_ch,
@@ -159,7 +159,7 @@ workflow {
   //  tuple(it[0], file.view())
   //}.view()
 
-  CUTADAPT_TRIM.out[0].flatten().filter( Map ).view()
+  // CUTADAPT_TRIM.out[0].flatten().filter( Map ).view()
   // S4_6_SUMMARIZE(
   //   // Meta
   //   S1_1_TRIM.out[0].flatten().filter( Map ),
