@@ -1,0 +1,5 @@
+id,case_r1,case_r2,ctrl_r1,ctrl_r2
+xxxy,/path/to/case/paired/end/r1,/path/to/case/paired/end/r2,/path/to/ctrl/paired/end/r1,/path/to/ctrl/paired/end/r2
+xxyx,/path/to/case/paired/end/r1,/path/to/case/paired/end/r2,,
+xyxx,/path/to/case/single/end,,/path/to/ctrl/single/end,
+yxxx,/path/to/case/single/end,,,

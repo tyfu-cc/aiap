@@ -49,8 +49,6 @@ process METHYLQA {
 
   before_aln_dedup=\$(awk 'NR > 1 {s += \$2} END {print s * 0.01 / (NR-1)}' ${dedup_pct})
   before_aln_dup=\$(python3 -c "print(f'{1 - \$before_aln_dedup:.4f}')")
-  nodup_ratio=\$(echo "scale=4; \$non_redundant_uniq_mapped / \$uniq_mapped" | bc -l)
-  after_aln_dup=\$(echo "scale=4; 1 - \$nodup_ratio" | bc -l)
   after_aln_dup=\$(python3 -c "print(f'{1 - \$non_redundant_uniq_mapped / \$uniq_mapped:.4f}')")
   {
     echo -e "before_alignment_duplicates_percentage\\t\$before_aln_dup"

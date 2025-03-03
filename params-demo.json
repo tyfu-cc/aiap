@@ -1,20 +1,20 @@
 {
-  "outdir": "/home/tianyi/processed_results",
-  "samplesheet": "samples-mm10.csv",
-  "species": "mm10",
+  "outdir": "/path/to/where/all/the/outputs/are/stored",
+  "samplesheet": "/path/to/samplesheet.csv",
+  "species": "mm10/other",
   "adapter_1": "CTGTCTCTTATACACATCT",
   "adapter_2": "CTGTCTCTTATACACATCT",
   "marker": "no_annotation",
-  "threads": 12,
+  "threads": 2,
   "methylqa_cutoff": 38,
   "run_preseq": true,
   "run_saturation": true,
-  "bwa_ref": "/home/tianyi/mm10/bwa_index_mm10/*",
-  "chrom_size": "/home/tianyi/mm10/mm10.chrom.sizes",
-  "black_list": "/home/tianyi/mm10/mm10_black_list.bed",
+  "bwa_ref": "/path/to/indexed/bwa/reference/files",
+  "chrom_size": "/path/to/reference/chrom/size",
+  "black_list": "/path/to/reference/black/list",
   "genome_size": 2730871774,
-  "promoter_file": "/home/tianyi/mm10/mm10_promoter_bistream_1kb.bed",
-  "coding_promoter": "/home/tianyi/mm10/mm10_promoter_bistream_1kb.bed",
-  "macs_genome": "mm"
+  "promoter_file": "/path/to/reference/promoter/file",
+  "coding_promoter": "/path/to/reference/coding/promoter/file",
+  "macs_genome": "mm/other"
 }
 
