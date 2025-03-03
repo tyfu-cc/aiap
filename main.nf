@@ -1,20 +1,20 @@
 
-include { S1_1_TRIM } from "${projectDir}/modules/local/s1_1_trim.nf"
-include { S1_2_QC } from "${projectDir}/modules/local/s1_2_qc.nf"
-include { S2_1_ALIGN } from "${projectDir}/modules/local/s2_1_align.nf"
-include { S2_2_COMPLEXITY} from "${projectDir}/modules/local/s2_2_complexity.nf"
-include { S3_1_QA } from "${projectDir}/modules/local/s3_1_qa.nf"
-include { S3_2_NORMALIZE } from "${projectDir}/modules/local/s3_2_normalize.nf"
-include { S3_3_PEAKS } from "${projectDir}/modules/local/s3_3_peaks.nf"
-include { S4_1_RUP } from "${projectDir}/modules/local/s4_1_rup.nf"
-include { S4_2_ENRICH } from "${projectDir}/modules/local/s4_2_enrich.nf"
-include { S4_3_SATURATION } from "${projectDir}/modules/local/s4_3_saturation.nf"
-include { S4_4_BACKGROUND } from "${projectDir}/modules/local/s4_4_background.nf"
-include { S4_6_SUMMARIZE } from "${projectDir}/modules/local/s4_6_summarize.nf"
+include { CUTADAPT_TRIM } from "${projectDir}/modules/local/cutadapt.nf"
+include { FASTQC } from "${projectDir}/modules/local/fastqc.nf"
+include { BWA_ALIGN } from "${projectDir}/modules/local/bwa_align.nf"
+include { PRESEQ } from "${projectDir}/modules/local/preseq.nf"
+include { METHYLQA } from "${projectDir}/modules/local/methylqa.nf"
+include { NORMALIZE_BEDGRAPH } from "${projectDir}/modules/local/normalize_bedgraph.nf"
+include { MACS_PEAK_CALLING } from "${projectDir}/modules/local/macs_peak_calling.nf"
+include { COMPUTE_RUP } from "${projectDir}/modules/local/compute_rup.nf"
+include { COMPUTE_ENRICHMENT } from "${projectDir}/modules/local/compute_enrichment.nf"
+include { COMPUTE_SATURATION } from "${projectDir}/modules/local/compute_saturation.nf"
+include { COMPUTE_BACKGROUND } from "${projectDir}/modules/local/compute_background.nf"
+include { MULTIQC } from "${projectDir}/modules/local/multiqc.nf"
 
 workflow {
   // Channel for the samplesheet
-  samplesheet_ch = Channel.fromPath(params.samples)
+  samplesheet_ch = Channel.fromPath(params.samplesheet)
 
   // Parse it line by line
   reads_ch = samplesheet_ch.splitCsv(header:true).flatMap {
@@ -38,43 +38,45 @@ workflow {
     // Control reads
     ctrl_reads = paired ? [ctrl_r1, ctrl_r2] : [ctrl_r1]
     
-    // We return a nested map, the first entry is the meta map, the second one is the read(s)
+    // Return a nested map, the first entry is the meta map, the second one is the read(s)
     cc ? [[meta + ["case": true], case_reads], [meta + ["case": false], ctrl_reads]] : [[meta, case_reads]]
   }
 
   reads_ch.view()
 
-  S1_1_TRIM(
+  CUTADAPT_TRIM(
     reads_ch,
     tuple(params.adapter_1, params.adapter_2)
   )
 
-  S1_2_QC(
-    S1_1_TRIM.out[0],
+  FASTQC(
+    CUTADAPT_TRIM.out[0],
   )
 
   ref_files = Channel.fromPath(params.bwa_ref).collect()
-  // ref_files.view()
-  S2_1_ALIGN(
-    S1_1_TRIM.out[0],
+  BWA_ALIGN(
+    CUTADAPT_TRIM.out[0],
     ref_files
   )
 
+  ch_preseq_yield_mqc = Channel.empty()
   if (params.run_preseq) {
-    S2_2_COMPLEXITY(
-      S2_1_ALIGN.out  
+    PRESEQ(
+      BWA_ALIGN.out  
     )
+    ch_preseq_yield_mqc = PRESEQ.out
   }
 
-  S3_1_QA(
-    S2_1_ALIGN.out,
+  METHYLQA(
+    BWA_ALIGN.out,
     file(params.chrom_size),
-    S1_1_TRIM.out.json
+    CUTADAPT_TRIM.out.trimlog,
+    FASTQC.out.dedup_pct_mqc
   )
 
-  nochrM_chrom_size = S3_1_QA.out.nochrM
+  nochrM_chrom_size = METHYLQA.out.nochrM
 
-  ch_s3_1_bedGraph = S3_1_QA.out[0].map { 
+  ch_s3_1_bedGraph = METHYLQA.out[0].map { 
     tuple(
       it[0],
       it[1..-1].flatten().find { it.name.endsWith("report") },
@@ -82,13 +84,13 @@ workflow {
     )
   }
 
-  S3_2_NORMALIZE(
+  NORMALIZE_BEDGRAPH(
     ch_s3_1_bedGraph,
     nochrM_chrom_size,
     file(params.black_list)
   ) 
 
-  grouped = S3_1_QA.out[0].map {
+  grouped = METHYLQA.out[0].map {
     tuple(
       it[0].id, 
       it[0], 
@@ -111,12 +113,12 @@ workflow {
   //   [meta, it[2]]
   // }.view()
   
-  S3_3_PEAKS(
+  MACS_PEAK_CALLING(
     grouped,
     file(params.black_list)
   )
 
-  ch_s3_3_bed_and_peak = S3_3_PEAKS.out[0].map {
+  ch_bed_and_peak = MACS_PEAK_CALLING.out[0].map {
     tuple(
       it[0],
       it[1..-1].flatten().find { it.name.endsWith("open.bed") },
@@ -124,24 +126,26 @@ workflow {
     )
   }
 
-  S4_1_RUP(
-    ch_s3_3_bed_and_peak,
+  COMPUTE_RUP(
+    ch_bed_and_peak,
     nochrM_chrom_size
   )
 
-  S4_2_ENRICH(
-    ch_s3_3_bed_and_peak,
+  COMPUTE_ENRICHMENT(
+    ch_bed_and_peak,
     file(params.coding_promoter)
   )
-
+  
+  ch_saturation_result_mqc = Channel.empty()
   if (params.run_saturation) {
-    S4_3_SATURATION(
-      ch_s3_3_bed_and_peak,
+    COMPUTE_SATURATION(
+      ch_bed_and_peak,
     )
+    ch_saturation_result_mqc = COMPUTE_SATURATION.out.saturation_mqc
   }
 
-  S4_4_BACKGROUND(
-    ch_s3_3_bed_and_peak,
+  COMPUTE_BACKGROUND(
+    ch_bed_and_peak,
     file(params.promoter_file),
     nochrM_chrom_size
   )
@@ -150,31 +154,52 @@ workflow {
   //   .collect()
   //   .view()
 
-  //S3_3_PEAKS.out[0].map { 
+  //MACS_PEAK_CALLING.out[0].map { 
   //  file = Channel.fromPath("${projectDir}-${it[0].id}/*", type: "file")
   //  tuple(it[0], file.view())
   //}.view()
 
-  S1_1_TRIM.out[0].flatten().filter( Map ).view()
-  S4_6_SUMMARIZE(
-    // Meta
-    S1_1_TRIM.out[0].flatten().filter( Map ),
+  CUTADAPT_TRIM.out[0].flatten().filter( Map ).view()
+  // S4_6_SUMMARIZE(
+  //   // Meta
+  //   S1_1_TRIM.out[0].flatten().filter( Map ),
 
-    // Trimlog
-    S1_1_TRIM.out.trimlog,
+  //   // Trimlog
+  //   S1_1_TRIM.out.trimlog,
 
-    // Outputs from methylQA
-    S3_1_QA.out[0].map { it[1..-1].flatten().collect() },
+  //   // Outputs from methylQA
+  //   METHYLQA.out[0].map { it[1..-1].flatten().collect() },
 
-    // Results from peak calling
-    S3_3_PEAKS.out[0].map { it[1..-1].flatten().collect() },
+  //   // Results from peak calling
+  //   MACS_PEAK_CALLING.out[0].map { it[1..-1].flatten().collect() },
 
 
-    // JSON files
-    S1_1_TRIM.out.json,
-    S3_1_QA.out.json,
-    S4_1_RUP.out.json,
-    S4_2_ENRICH.out.json,
-    S4_4_BACKGROUND.out.json
+  //   // JSON files
+  //   S1_1_TRIM.out.json,
+  //   METHYLQA.out.json,
+  //   S4_1_RUP.out.json,
+  //   S4_2_ENRICH.out.json,
+  //   S4_4_BACKGROUND.out.json
+  // )
+
+  ch_multiqc_config = Channel.fromPath("${projectDir}/assets/multiqc_config.yaml", checkIfExists: true)
+  MULTIQC(
+    ch_multiqc_config,
+    CUTADAPT_TRIM.out.trimlog.mix(
+      FASTQC.out.zip.flatten(),
+      ch_preseq_yield_mqc,
+      METHYLQA.out.insert_size_mqc,
+      METHYLQA.out.mapping_status_mqc,
+      METHYLQA.out.dup_pct_mqc,
+      MACS_PEAK_CALLING.out[0].map { it[1..-1].flatten() },
+      MACS_PEAK_CALLING.out.peak_len_dist_mqc,
+      COMPUTE_RUP.out.nrup_mqc,
+      COMPUTE_RUP.out.rup_ratio_mqc,
+      COMPUTE_ENRICHMENT.out.enrich_score_mqc,
+      ch_saturation_result_mqc,
+      COMPUTE_BACKGROUND.out.pnp_peaks_mqc,
+      COMPUTE_BACKGROUND.out.pnp_reads_mqc,
+      COMPUTE_BACKGROUND.out.background_0_3777_mqc
+    ).collect()
   )
 }

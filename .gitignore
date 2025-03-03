@@ -5,3 +5,6 @@ work/
 .nextflow/
 .nextflow.log
 .nextflow.log.*
+
+!params-demo.json
+!samplesheet.csv

@@ -1,0 +1,20 @@
+{
+  "outdir": "/home/tianyi/processed_results",
+  "samplesheet": "samples-mm10.csv",
+  "species": "mm10",
+  "adapter_1": "CTGTCTCTTATACACATCT",
+  "adapter_2": "CTGTCTCTTATACACATCT",
+  "marker": "no_annotation",
+  "threads": 12,
+  "methylqa_cutoff": 38,
+  "run_preseq": true,
+  "run_saturation": true,
+  "bwa_ref": "/home/tianyi/mm10/bwa_index_mm10/*",
+  "chrom_size": "/home/tianyi/mm10/mm10.chrom.sizes",
+  "black_list": "/home/tianyi/mm10/mm10_black_list.bed",
+  "genome_size": 2730871774,
+  "promoter_file": "/home/tianyi/mm10/mm10_promoter_bistream_1kb.bed",
+  "coding_promoter": "/home/tianyi/mm10/mm10_promoter_bistream_1kb.bed",
+  "macs_genome": "mm"
+}
+

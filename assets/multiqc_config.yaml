@@ -1,0 +1,161 @@
+
+exclude_modules:
+  - "general_stats"
+
+custom_data:
+  mapping_status_section:
+    parent_id: "mapping_stats_section"
+    parent_name: "Mapping Statistics"
+    section_name: "Mapping Status"
+    file_format: "tsv"
+    plot_type: "bargraph"
+    pconfig:
+      id: "mapping_status_plot"
+      title: "Mapping Status"
+      stacking: "group"
+      cpswitch: False
+  insert_size_section:
+    parent_id: "mapping_stats_section"
+    parent_name: "Mapping Statistics"
+    section_name: "Insert Size"
+    file_format: "tsv"
+    plot_type: "linegraph"
+    pconfig:
+      id: "insert_size_plot"
+      title: "Insert Size Distribution"
+      xlab: "Insert Size"
+      ylab: "Count"
+  dup_pct_section:
+    parent_id: "mapping_stats_section"
+    parent_name: "Mapping Statistics"
+    section_name: "Duplication Percentages"
+    file_format: "tsv"
+    plot_type: "bargraph"
+    pconfig:
+      id: "dup_pct_plot"
+      title: "Duplication Percentages"
+      stacking: "group"
+      cpswitch: False
+  peak_length_section:
+    parent_id: "peak_calling_stats_section"
+    parent_name: "Peak Calling Statistics"
+    section_name: "Peak Length"
+    file_format: "tsv"
+    plot_type: "linegraph"
+    pconfig:
+      id: "peak_length_plot"
+      title: "Peak Length Distribution"
+      xlab: "Peak Length"
+      ylab: "Count"
+  nrup_section:
+    parent_id: "peak_calling_stats_section"
+    parent_name: "Peak Calling Statistics"
+    section_name: "Reads under Peaks"
+    file_format: "tsv"
+    plot_type: "bargraph"
+    pconfig:
+      id: "nrup_plot"
+      title: "Number of Reads under Peaks"
+      cpswitch: False
+  rup_ratio_section:
+    parent_id: "peak_calling_stats_section"
+    parent_name: "Peak Calling Statistics"
+    section_name: "Reads under Peaks Ratio"
+    file_format: "tsv"
+    plot_type: "bargraph"
+    pconfig:
+      id: "rup_ratio_plot"
+      title: "Reads under Peaks Ratio"
+      cpswitch: False
+  pnp_peaks_section:
+    parent_id: "peak_calling_stats_section"
+    parent_name: "Peak Calling Statistics"
+    section_name: "Peaks in Promoter vs Non-Promoter"
+    sfile_format: "tsv"
+    plot_type: "bargraph"
+    pconfig:
+      id: "pnp_peaks_plot"
+      title: "Peaks in Promoter vs Non-Promoter"
+  pnp_reads_section:
+    parent_id: "peak_calling_stats_section"
+    parent_name: "Peak Calling Statistics"
+    section_name: "Reads in Promoter vs Non-Promoter"
+    sfile_format: "tsv"
+    plot_type: "bargraph"
+    pconfig:
+      id: "pnp_reads_plot"
+      title: "Reads in Promoter vs Non-Promoter"
+  enrichment_scores_section:
+    parent_id: "peak_calling_stats_section"
+    parent_name: "Peak Calling Statistics"
+    section_name: "Enrichment Scores"
+    file_format: "tsv"
+    plot_type: "bargraph"
+    pconfig:
+      id: "enrichment_scores_plot"
+      title: "Enrichment Scores"
+      stacking: "group"
+      cpswitch: False
+  background_section:
+    parent_id: "peak_calling_stats_section"
+    parent_name: "Peak Calling Statistics"
+    section_name: "Background"
+    file_format: "tsv"
+    plot_type: "bargraph"
+    pconfig:
+      id: "background_plot"
+      title: "Background"
+      cpswitch: False 
+  saturation_section:
+    parent_id: "peak_calling_stats_section"
+    parent_name: "Peak Calling Statistics"
+    section_name: "Saturation"
+    file_format: "tsv"
+    plot_type: "linegraph"
+    pconfig:
+      id: "saturation_plot"
+      title: "Recaptured Coverage Ratio"
+      xlab: "Percentage of Original Library Size"
+      ylab: "Percentage of Coverage Ratio in Original Peaks"
+
+sp:
+  mapping_status_section:
+    fn: "*mapping_status_mqc.tsv"
+  insert_size_section:
+    fn: "*insert_size_dist_mqc.tsv"
+  dup_pct_section:
+    fn: "*dup_pct_mqc.tsv"
+  peak_length_section:
+    fn: "*peak_len_dist_mqc.tsv"
+  nrup_section:
+    fn: "*nrup_mqc.tsv"
+  rup_ratio_section:
+    fn: "*rup_ratio_mqc.tsv"
+  pnp_peaks_section:
+    fn: "*promoter_nonpromoter_peaks_mqc.tsv"
+  pnp_reads_section:
+    fn: "*promoter_nonpromoter_reads_mqc.tsv"
+  enrichment_scores_section:
+    fn: "*enrichment_scores_mqc.tsv"
+  background_section:
+    fn: "*background_0_3777_mqc.tsv"
+  saturation_section:
+    fn: "*saturation_mqc.tsv"
+
+report_section_order:
+  cutadapt:
+    order: 1000
+  fastqc:
+    before: cutadapt
+  preseq:
+    before: fastqc
+  mapping_stats_section:
+    before: fastqc
+  macs:
+    before: mapping_stats_section
+  peak_calling_stats_section:
+    before: macs
+  multiqc_software_versions:
+    order: -1000
+
+
