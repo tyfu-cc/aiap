@@ -1,8 +1,10 @@
 # AIAP Test Version
 
 ## Usage
+
 ### 0. Install Nextflow
 Refer to the [Nextflow documentation](https://www.nextflow.io/docs/latest/install.html) for installation instructions.
+
 ### 1. Build the Singularity Image
 First, build the singularity image using the provided definition file:
 ```
@@ -17,7 +19,7 @@ Alternatively, you can use any other singularity image that contains the require
 ### 3. Run the Pipeline
 You can run the pipeline using:
 ```
-nextflow run tyfu-cc/aiap -params-file /path/to/params.json -with-singularity /path/to/image.sif
+nextflow run tyfu-cc/aiap -params-file /path/to/params/json/file -with-singularity /path/to/your/sif/file
 ```
 Or, if you've cloned the pipeline locally, navigate to its directory and run:
 ```
