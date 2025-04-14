@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 process COMPUTE_BACKGROUND {
-  publishDir "${params.outdir}/${meta.id}/4_4_background", mode: "copy"
+  publishDir "${params.outdir}/${meta.id}/background_results", mode: "copy"
   
   input:
   tuple(

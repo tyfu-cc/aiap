@@ -8,7 +8,7 @@ Refer to the [Nextflow documentation](https://www.nextflow.io/docs/latest/instal
 ### 1. Build the Singularity Image
 First, build the singularity image using the provided definition file:
 ```
-singularity build aiap-nf.sif aiap-nf.def
+singularity build --fakeroot aiap-nf.sif aiap-nf.def
 ```
 Alternatively, you can use any other singularity image that contains the required tools.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 process NORMALIZE_BEDGRAPH {
-  publishDir "${params.outdir}/${meta.id}/3_2_normalize", mode: "copy"
+  publishDir "${params.outdir}/${meta.id}/normalized_results", mode: "copy"
 
   input:
   tuple(
