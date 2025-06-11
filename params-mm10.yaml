@@ -1,0 +1,9 @@
+outdir: "/home/tianyi/test-data/atacseq/test-aiap/aiap-outputs"
+samplesheet: "samples-mm10.csv"
+fasta: "/home/tianyi/genomes/mouse/gencode-m37/fasta/GRCm39.primary_assembly.genome.fa"
+gtf: "/home/tianyi/genomes/mouse/gencode-m37/gtf/gencode.vM37.annotation.gtf"
+bwa_index: "/home/tianyi/genomes/mouse/gencode-m37/bwa_index/"
+blacklist: "/home/tianyi/genomes/mouse/gencode-m37/blacklist/mm39.excluderanges.bed"
+adapter_1: "CTGTCTCTTATACACATCT"
+adapter_2: "CTGTCTCTTATACACATCT"
+threads: 12
