@@ -7,7 +7,7 @@ include { FASTQC                            } from "../../modules/zhanglab/fastq
 include { BWA_MEM                           } from "../../modules/zhanglab/bwa/mem"
 include { PRESEQ_LCEXTRAP                   } from "../../modules/zhanglab/preseq/lcextrap"
 include { METHYLQA_ATAC                     } from "../../modules/zhanglab/methylqa/atac"
-include { MACS3_CALLPEAK                    } from "../../modules/zhanglab/macs3/callpeak"
+include { MACS2_CALLPEAK                    } from "../../modules/zhanglab/macs2/callpeak"
 
 include { FILTER_BLACKLIST                  } from "../../modules/local/filterblacklist"
 include { BEDTOOLS_GENOMECOV                } from "../../modules/local/bedtoolsgenomecov"
@@ -15,6 +15,7 @@ include { COMPUTE_RUPR                      } from "../../modules/local/computer
 include { COMPUTE_PROEN                     } from "../../modules/local/computeproen"
 include { COMPUTE_BG                        } from "../../modules/local/computebg"
 include { COMPUTE_SATURATION                } from "../../modules/local/computesaturation"
+include { MULTIQC                           } from "../../modules/local/multiqc"
 
 
 workflow AIAP {
@@ -37,6 +38,9 @@ workflow AIAP {
     
 
     main:
+    ch_versions = Channel.empty()
+    ch_multiqc_files = Channel.empty()
+
     ch_samplesheet = Channel.fromPath(params.samplesheet)
 
     // Parse it line by line
@@ -70,9 +74,8 @@ workflow AIAP {
     ch_trimmed_fastq = CUTADAPT.out.reads
 
     FASTQC( ch_trimmed_fastq )
-
-    ch_versions = Channel.empty()
-    ch_multiqc_files = Channel.empty()
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{ it[1] })
+    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
 
     BWA_MEM( ch_trimmed_fastq, ch_bwa_index )
 
@@ -84,6 +87,7 @@ workflow AIAP {
         BWA_MEM.out.bam,
         ch_filtered_chrom_sizes
     )
+    ch_multiqc_files = ch_multiqc_files.mix(METHYLQA_ATAC.out.report.collect{ it[1] })
 
     FILTER_BLACKLIST(
         METHYLQA_ATAC.out.bed,
@@ -117,16 +121,16 @@ workflow AIAP {
         .set{ ch_merged }
     ch_merged.view()
 
-    MACS3_CALLPEAK(
+    MACS2_CALLPEAK(
         ch_merged,
         ch_macs_gsize
     )
+    ch_multiqc_files = ch_multiqc_files.mix(MACS2_CALLPEAK.out.xls.collect{ it[1] })
 
-    MACS3_CALLPEAK.out.peak.view()
 
     // Create channels: [ meta, case_bed, peak ]
     ch_merged
-        .join(MACS3_CALLPEAK.out.peak, by: [0])
+        .join(MACS2_CALLPEAK.out.peak, by: [0])
         .map{
             meta, case_bed, control_bed, peak ->
             [ meta, case_bed, peak ]
@@ -151,6 +155,27 @@ workflow AIAP {
     COMPUTE_SATURATION(
         ch_bed_peak,
         ch_macs_gsize
+    )
+
+
+    // MODULE: MultiQC
+    ch_multiqc_config = Channel.fromPath(
+        "${projectDir}/assets/multiqc/multiqc_config.yaml", checkIfExists: true)
+    ch_multiqc_custom_config = params.multiqc_config ?
+        Channel.fromPath(params.multiqc_config, checkIfExists: true) :
+        Channel.empty()
+    ch_multiqc_logo = params.multiqc_logo ?
+        Channel.fromPath(params.multiqc_logo, checkIfExists: true) :
+        Channel.empty()
+
+    ch_multiqc_files.collect().view()
+    MULTIQC(
+        ch_multiqc_files.collect(),
+        ch_multiqc_config.toList(),
+        ch_multiqc_custom_config.toList(),
+        ch_multiqc_logo.toList(),
+        [],
+        []
     )
 
 }
