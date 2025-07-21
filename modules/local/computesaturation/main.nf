@@ -1,6 +1,6 @@
 process COMPUTE_SATURATION {
     tag "${meta.id}"
-    label "process_medium"
+    label "process_low"
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/mulled-v2-20f97261dc026feb7aca77ec7eca9ebfcb93f1ef:f4f30a4635214a5ded57a1b274e5f847eff9aa0b-0' :
@@ -11,8 +11,8 @@ process COMPUTE_SATURATION {
     val macs_gsize
 
     output:
-    path("*saturation.txt"), emit: saturation
-    path "versions.yml"    , emit: versions
+    tuple val(meta), path("*.saturation.txt"), emit: txt
+    path "versions.yml"                      , emit: versions
 
     when:
     task.ext.when == null || task.ext.when

@@ -1,0 +1,8 @@
+# parent_id: "mapping_metrics"
+# parent_name: "Mapping Metrics"
+# parent_description: ""
+# id: "methylqa_table"
+# section_anchor: "methylqa_table"
+# section_name: "Read Mapping Summary"
+# description: "Read mapping summary reported by methylQA"
+# plot_type: "table"

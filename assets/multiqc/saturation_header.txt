@@ -1,0 +1,15 @@
+# parent_id: "peak_calling_metrics"
+# parent_name: "Peak Calling Metrics"
+# id: "saturation_plot"
+# section_anchor: "saturation_plot"
+# section_name: "Saturation"
+# plot_type: "linegraph"
+# pconfig:
+#     title: "Recaptured Coverage Ratio"
+#     xlab: "Percentage of Original Library Size"
+#     ylab: "Ratio of Coverage in Original Peaks"
+#     xmin: 0
+#     xmax: 100
+#     ymin: 0
+#     ymax: 1
+#     ysuffix: ""

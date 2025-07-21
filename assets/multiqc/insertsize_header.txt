@@ -1,0 +1,13 @@
+# parent_id: "mapping_metrics"
+# parent_name: "Mapping Metrics"
+# id: "insertsize_plot"
+# section_anchor: "insertsize_plot"
+# section_name: "Insert Size"
+# plot_type: "linegraph"
+# pconfig:
+#     title: "Insert Size Distribution"
+#     xlab: "Insert size"
+#     ylab: "Frequency"
+#     xmin: 0
+#     xsuffix: ""
+#     ysuffix: ""

@@ -1,6 +1,6 @@
 process COMPUTE_BG {
     tag "${meta.id}"
-    label "process_medium"
+    label "process_low"
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/mulled-v2-fc325951871d402a00bdf9d0e712a5b81b8e0cb3:38034b9703d6561a40bcaf2f1ec16f8b158fde97-0' :
@@ -12,8 +12,8 @@ process COMPUTE_BG {
     path chrom_sizes
 
     output:
-    tuple val(meta), path("*background.txt"), emit: txt
-    path "versions.yml"                     , emit: versions
+    tuple val(meta), path("*.background.txt"), emit: txt
+    path "versions.yml"                              , emit: versions
 
     when:
     task.ext.when == null || task.ext.when

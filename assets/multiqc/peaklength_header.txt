@@ -1,0 +1,14 @@
+# parent_id: "peak_calling_metrics"
+# parent_name: "Peak Calling Metrics"
+# id: "peaklength_plot"
+# section_anchor: "peaklength_plot"
+# section_name: "Peak Length"
+# plot_type: "linegraph"
+# pconfig:
+#     title: "Peak Length Distribution"
+#     xlab: "Peak length"
+#     ylab: "Frequency"
+#     xmin: 0
+#     ymin: 0
+#     xsuffix: ""
+#     ysuffix: ""

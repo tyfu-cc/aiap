@@ -1,5 +1,6 @@
 process FILTER_BLACKLIST {
     tag "${meta.id}"
+    label "process_single"
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bedtools:2.30.0--hc088bd4_0':

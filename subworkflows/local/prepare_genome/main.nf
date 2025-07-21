@@ -1,5 +1,8 @@
 
 include { GUNZIP as GUNZIP_FASTA            } from "../../../modules/zhanglab/gunzip"
+include { GUNZIP as GUNZIP_GTP              } from "../../../modules/zhanglab/gunzip"
+include { GUNZIP as GUNZIP_BLACKLIST        } from "../../../modules/zhanglab/gunzip"
+include { UNTAR as UNTAR_BWA_INDEX          } from "../../../modules/zhanglab/untar"
 include { BWA_INDEX                         } from "../../../modules/zhanglab/bwa/index"
 include { KHMER_UNIQUEKMERS                 } from "../../../modules/zhanglab/khmer/uniquekmers"
 
@@ -26,14 +29,7 @@ workflow PREPARE_GENOME {
         ch_fasta = Channel.value(file(fasta, checkIfExists: true))
     }
 
-    // Create chromosome sizes file
-    GETCHROMSIZES( ch_fasta.map{ [ [:], it ] } )
-    ch_fai                  = GETCHROMSIZES.out.fai.map{ it[1] }
-    ch_chrom_sizes          = GETCHROMSIZES.out.sizes.map{ it[1] }
-    ch_filtered_chrom_sizes = GETCHROMSIZES.out.filtered_sizes.map{ it[1] }
-    ch_versions             = ch_versions.mix(GETCHROMSIZES.out.versions)
-
-    // Get something
+    // Retrieve the gtf file
     ch_gtf = Channel.empty()
     if (gtf.endsWith(".gz")) {
         ch_gtf = GUNZIP_GTF ( [ [:], file(gtf, checkIfExists: true) ] ).gunzip.map { it[1] }
@@ -42,6 +38,16 @@ workflow PREPARE_GENOME {
         ch_gtf = Channel.value(file(gtf, checkIfExists: true))
     }
 
+    // Create chromosome sizes file
+    GETCHROMSIZES( ch_fasta.map{ [ [:], it ] } )
+    ch_fai                  = GETCHROMSIZES.out.fai.map{ it[1] }
+    ch_chrom_sizes          = GETCHROMSIZES.out.sizes.map{ it[1] }
+    ch_filtered_chrom_sizes = GETCHROMSIZES.out.filtered_sizes.map{ it[1] }
+    ch_versions             = ch_versions.mix(GETCHROMSIZES.out.versions)
+
+
+    // Extract the promoter regions from the gtf file
+    // The promoter regions are defined as +/-1kb from the TSS of genes
     ch_promoters_bed = Channel.empty()
     ch_coding_promoters_bed = Channel.empty()
     EXTRACT_PROMOTERS( ch_gtf )
@@ -50,7 +56,7 @@ workflow PREPARE_GENOME {
 
     ch_bwa_index = Channel.empty()
     if (params.bwa_index) {
-        if (params.bwa_index.endsWith(".tar.gz")) {
+        if (params.bwa_index.endsWith(".tar") || params.bwa_index.endsWith(".tar.gz")) {
             ch_bwa_index = UNTAR_BWA_INDEX( [ [:], params.bwa_index ] ).untar
             ch_versions  = ch_versions.mix(UNTAR_BWA_INDEX.out.versions)
         } else {
@@ -79,24 +85,24 @@ workflow PREPARE_GENOME {
         params.keep_mito ?: false,
     )
     ch_genome_filtered_bed = GENOME_BLACKLIST_REGIONS.out.bed
-    ch_versions = ch_versions.mix(GENOME_BLACKLIST_REGIONS.out.versions)
+    ch_versions = ch_versions.mix( GENOME_BLACKLIST_REGIONS.out.versions )
 
 
-    ch_macs_gsize = params.macs_gsize
+    ch_macs_gsize = Channel.empty()
     if (!params.macs_gsize) {
         KHMER_UNIQUEKMERS (
             ch_fasta,
             params.read_length
         )
         ch_macs_gsize = KHMER_UNIQUEKMERS.out.kmers.map{ it.text.trim() }
-        ch_versions   = ch_versions.mix(KHMER_UNIQUEKMERS.out.versions)
+        ch_versions   = ch_versions.mix( KHMER_UNIQUEKMERS.out.versions )
+    } else {
+      ch_macs_gsize = Channel.value(params.macs_gsize)
     }
 
 
     emit: 
     fasta                = ch_fasta                      //    path: genome.fasta
-    // fai           = ch_fai                        //    path: genome.fai
-    // gtf           = ch_gtf                        //    path: genome.gtf
     chrom_sizes          = ch_chrom_sizes
     filtered_chrom_sizes = ch_filtered_chrom_sizes
     promoters_bed        = ch_promoters_bed
@@ -105,5 +111,8 @@ workflow PREPARE_GENOME {
     genome_filtered_bed  = ch_genome_filtered_bed
     bwa_index            = ch_bwa_index
     macs_gsize           = ch_macs_gsize
+    versions             = ch_versions
+    // fai           = ch_fai                        //    path: genome.fai
+    // gtf           = ch_gtf                        //    path: genome.gtf
 
 }

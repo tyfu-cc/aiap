@@ -1,0 +1,21 @@
+# parent_id: "peak_calling_metrics"
+# parent_name: "Peak Calling Metrics"
+# id: "peak_calling_qc"
+# section_anchor: "peak_calling_qc"
+# section_name: "Peak Calling QC"
+# plot_type: "table"
+# headers:
+#     "# Peaks called":
+#         format: "{:,.0f}"
+#     "RUPr":
+#         format: "{:,.4f}"
+#         min: 0
+#         max: 1
+#     "Background":
+#         format: "{:,.4f}"
+#         min: 0
+#         max: 1
+#     "ProEn":
+#         format: "{:,.4f}"
+#     "SubEn":
+#         format: "{:,.4f}"

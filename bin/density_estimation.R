@@ -1,25 +1,36 @@
 #!/usr/bin/env Rscript
 
-args <- commandArgs(trailingOnly = T)
+args <- commandArgs(trailingOnly = TRUE)
 infile <- args[1]
 outfile <- args[2]
 
-if (file.info(infile)$size == 0) {
-  file.create(outfile)
-} else {
-  raw_counts <- read.table(infile, header = FALSE)
-  expanded_counts <- rep(raw_counts$V1, raw_counts$V2)
-  if (length(expanded_counts) < 2) {
-    file.create(outfile)
-  } else {
-    dens <- density(expanded_counts, bw = "SJ")
-    write.table(
-      data.frame(dens$x, dens$y),
-      file = outfile,
-      sep = "\t",
-      row.names = FALSE,
-      col.names = FALSE,
-      quote = FALSE
-    )
-  }
-}
+# Safe wrapper to handle all errors in one place
+suppressWarnings(
+  tryCatch({
+    if (!file.exists(infile) || file.info(infile)$size == 0) {
+      file.create(outfile)
+      quit(save = "no", status = 0)
+    }
+    
+    raw_counts <- read.table(infile, header = FALSE)
+    expanded_counts <- rep(raw_counts$V1, raw_counts$V2)
+    
+    if (length(expanded_counts) < 3) {
+      file.create(outfile)
+    } else {
+      dens <- density(expanded_counts, bw = "SJ")
+      write.table(
+        data.frame(dens$x, dens$y),
+        file = outfile,
+        sep = "\t",
+        row.names = FALSE,
+        col.names = FALSE,
+        quote = FALSE
+      )
+    }
+  }, error = function(e) {
+    file.create(outfile)  # fallback
+  })
+)
+
+quit(save = "no", status = 0)

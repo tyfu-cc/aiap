@@ -1,0 +1,8 @@
+outdir: "/home/tianyi/test-data/chip-seq/test-aiap/aiap-outputs"
+input: "samples-test.csv"
+fasta: "/home/tianyi/test-data/chip-seq/genome_data/hg38_chr19_chrM/GRCh38_no_alt_analysis_set_GCA_000001405.15.chr19_chrM.fasta.gz"
+gtf: "/home/tianyi/genomes/mouse/gencode-m37/gtf/gencode.vM37.annotation.gtf"
+bwa_index: "/home/tianyi/test-data/chip-seq/genome_data/hg38_chr19_chrM/bwa_index/GRCh38_no_alt_analysis_set_GCA_000001405.15.chr19_chrM.fasta.tar"
+blacklist: "/home/tianyi/test-data/chip-seq/genome_data/hg38_chr19_chrM/hg38.blacklist.bed.gz"
+skip_preseq: true
+threads: 12
