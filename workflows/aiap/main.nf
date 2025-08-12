@@ -182,6 +182,7 @@ workflow AIAP {
     }
     ch_saturation = COMPUTE_SATURATION.out.txt
 
+    // This is for plotting the peak length distribution
     DENSITY_ESTIMATION(
         METHYLQA_ATAC.out.insertdistro
             .join(MACS2_CALLPEAK.out.peak),
@@ -191,7 +192,6 @@ workflow AIAP {
     ch_multiqc_files = ch_multiqc_files.mix (
         DENSITY_ESTIMATION.out.mqc.map{ meta, files -> files }.flatten()
     )
-
 
     // Reformt the data so that they can be recognized by MultiQC
     REFORMAT_PEAK_CALLING_METRICS (
